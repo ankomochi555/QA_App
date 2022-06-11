@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <!--android:checkableBehavior キーワード。グループのチェック可能動作のタイプ。有効な値:
+         single	チェック可能なアイテムは 1 つだけです（ラジオボタンを使用します）。
+         none	チェック可能なアイテムはありません。
+         all	すべてのアイテムがチェック可能です（チェックボックスを使用します）。-->
+        <item
+            android:id="@+id/nav_favorite"
+            android:title="@string/menu_favorite_label"/>
+
+        <item
+            android:id="@+id/nav_hobby"
+            android:title="@string/menu_hobby_label"/>
+
+        <item
+            android:id="@+id/nav_life"
+            android:title="@string/menu_life_label"/>
+
+        <item
+            android:id="@+id/nav_health"
+            android:title="@string/menu_health_label"/>
+
+        <item
+            android:id="@+id/nav_compter"
+            android:title="@string/menu_compter_label"/>
+    </group>
+
+</menu>

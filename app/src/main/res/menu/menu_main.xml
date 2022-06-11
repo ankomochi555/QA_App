@@ -1,0 +1,13 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="jp.techacademy.arisa.takeishi.qa_app.MainActivity">
+
+    <!--右上のメニューボタンをタップするとSettingsと表示されている箇所を設定と表示する
+    action_settingsからsettings_titileへ変更-->
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:title="@string/settings_titile"
+        app:showAsAction="never" />
+</menu>
