@@ -9,14 +9,11 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
-// Adapter用レイアウトファイルから該当Ｖｉｅｗを取得
 import kotlinx.android.synthetic.main.list_questions.view.*
 
-
-//Answer,Questionモデルクラスをリストに表示するQuestionsListAdapterクラス
-class QuestionsListAdapter(context: Context) : BaseAdapter() {
+class FavoriteListAdapter (context: Context) : BaseAdapter() {
     private var mLayoutInflater: LayoutInflater
-    private var mQuestionArrayList = ArrayList<Question>() //質問一覧,項目
+    private var mFavoriteArrayList = ArrayList<Question>() //質問一覧,項目
 
     init {
         mLayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -24,12 +21,12 @@ class QuestionsListAdapter(context: Context) : BaseAdapter() {
 
     //getCount	アイテム（データ）の数を返す
     override fun getCount(): Int {
-        return mQuestionArrayList.size
+        return mFavoriteArrayList.size
     }
 
     //getItem	アイテム（データ）を返す
     override fun getItem(position: Int): Any {
-        return mQuestionArrayList[position]
+        return mFavoriteArrayList[position]
     }
 
     //getItemId	アイテム（データ）のIDを返す
@@ -42,21 +39,21 @@ class QuestionsListAdapter(context: Context) : BaseAdapter() {
         var convertView = view
 
         if (convertView == null) {
-            convertView = mLayoutInflater.inflate(R.layout.list_questions, parent, false)
+            convertView = mLayoutInflater.inflate(R.layout.list_favorite, parent, false)
         }
 
         val titleText = convertView!!.titleTextView as TextView
-        titleText.text = mQuestionArrayList[position].name
+        titleText.text = mFavoriteArrayList[position].name
 
         val nameText = convertView.nameTextView as TextView
-        nameText.text = mQuestionArrayList[position].name
+        nameText.text = mFavoriteArrayList[position].name
 
         val resText = convertView.resTextView as TextView
-        val resNum = mQuestionArrayList[position].answers.size
+        val resNum = mFavoriteArrayList[position].answers.size
         resText.text = resNum.toString()
 
         //ImageViewに設定するBitmapはbyteの配列から生成
-        val bytes = mQuestionArrayList[position].imageBytes
+        val bytes = mFavoriteArrayList[position].imageBytes
         if (bytes.isNotEmpty()) {//★Configとは「設定」のこと。 もしくは「設定ファイル」のこと
             val image = BitmapFactory.decodeByteArray(bytes, 0, bytes.size).copy(Bitmap.Config.ARGB_8888, true)
             val imageView = convertView.imageView as ImageView
@@ -66,7 +63,7 @@ class QuestionsListAdapter(context: Context) : BaseAdapter() {
         return convertView
     }
 
-    fun setQuestionArrayList(questionArrayList: ArrayList<Question>) {
-        mQuestionArrayList = questionArrayList
+    fun setFavoriteArrayList(questionArrayList: ArrayList<Question>) {
+        mFavoriteArrayList = questionArrayList
     }
 }

@@ -12,7 +12,6 @@
     tools:context=".QuestionDetailActivity">
 
     <!--質問詳細画面はリストとFloatingActionButtonを表示-->
-    <!--ListViewをrecyclerviewrecyclerviewに変更-->
 
     <ListView
         android:layout_width="match_parent"

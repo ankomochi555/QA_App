@@ -32,7 +32,7 @@ class QuestionDetailListAdapter(context: Context, private val mQuestion: Questio
 
     //getCount	アイテム（データ）の数を返す
     override fun getCount(): Int {
-        return 1 + mQuestion.answers.size //★どういう意味
+        return 1 + mQuestion.answers.size
     }
 
     //引数で渡ってきたポジションがどのタイプかを返す

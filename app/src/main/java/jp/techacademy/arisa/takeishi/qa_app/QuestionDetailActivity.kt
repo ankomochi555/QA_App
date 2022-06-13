@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import jp.techacademy.arisa.takeishi.qa_app.databinding.ActivityQuestionDetailBinding
@@ -14,6 +15,7 @@ class QuestionDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityQuestionDetailBinding
 
     private lateinit var mQuestion: Question
+    //private lateinit var mFavorite: Question
     private lateinit var mAdapter: QuestionDetailListAdapter
     private lateinit var mAnswerRef: DatabaseReference
 
@@ -24,7 +26,7 @@ class QuestionDetailActivity : AppCompatActivity() {
 
             val answerUid = dataSnapshot.key ?: ""
 
-            for (answer in mQuestion.answers) {
+            for (answer in mQuestion.answers) { //〇変更??
                 // 同じAnswerUidのものが存在しているときは何もしない
                 if (answerUid == answer.answerUid){
                     return
@@ -36,7 +38,7 @@ class QuestionDetailActivity : AppCompatActivity() {
             val uid = map["uid"] as? String ?: ""
 
             val answer = Answer(body, name, uid, answerUid)
-            mQuestion.answers.add(answer)
+            mQuestion.answers.add(answer) //〇変更??
             mAdapter.notifyDataSetChanged()
         }
 
@@ -101,7 +103,7 @@ class QuestionDetailActivity : AppCompatActivity() {
     // そして、ListViewの準備をする。
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_question_detail)
+        //setContentView(R.layout.activity_question_detail)
         binding = ActivityQuestionDetailBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
@@ -109,13 +111,19 @@ class QuestionDetailActivity : AppCompatActivity() {
         // 渡ってきたQuestionのオブジェクトを保持する
         val extras = intent.extras
         mQuestion = extras!!.get("question") as Question
+//        mFavorite = extras!!.get("favorite") as Question //〇追加??
 
         title = mQuestion.title
+//        title = mFavorite.title //〇追加??
 
         // ListViewの準備
         mAdapter = QuestionDetailListAdapter(this, mQuestion)
         listView.adapter = mAdapter
         mAdapter.notifyDataSetChanged()
+
+//        mAdapter = QuestionDetailListAdapter(this, mFavorite) //〇追加??
+//        listView.adapter = mAdapter
+//        mAdapter.notifyDataSetChanged()
 
         //FABをタップしたらログインしていなければログイン画面に遷移させ、
         // ログインしていれば後ほど作成する回答作成画面に遷移させる準備をしておく
@@ -137,15 +145,17 @@ class QuestionDetailActivity : AppCompatActivity() {
         }
 
         //〇　ログインしている場合、質問詳細画面に「お気に入り」ボタンを表示する　
-        var flg = true
-        binding.favoriteImageBtn.setOnClickListener {
-            val user = FirebaseAuth.getInstance().currentUser
-            if (user != null){ //ログインしていない場合、表示しない
-                favoriteImageBtn.setVisibility(View.GONE)
-            } else { //ログインしている場合、表示
-                favoriteImageBtn.setVisibility(View.VISIBLE)
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user == null){ //ログインしていない場合、表示しない
+            favoriteImageBtn.visibility = View.INVISIBLE
+        } else { //ログインしている場合、表示
+            //favoriteImageBtn.setVisibility(View.VISIBLE)
 
-                //お気に入りタップで登録/更新 タップすると画像が消える
+        var flg = true
+        //val favoriteImageBtn : ImageButton = findViewById(R.id.favoriteImageBtn)
+        binding.favoriteImageBtn.setOnClickListener {
+
+                //お気に入りタップで登録/更新 
                 val dataBaseReference = FirebaseDatabase.getInstance().reference
                 val mFavoriteRef: DatabaseReference = dataBaseReference.child(FavoritePATH).child(user!!.uid).child(mQuestion.questionUid)
 

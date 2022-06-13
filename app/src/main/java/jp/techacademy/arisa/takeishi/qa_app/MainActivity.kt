@@ -1,5 +1,6 @@
 package jp.techacademy.arisa.takeishi.qa_app
 
+// findViewById()を呼び出さずに該当Viewを取得するために必要となるインポート宣言
 import android.content.Intent
 import android.os.Bundle
 import android.util.Base64
@@ -14,7 +15,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-// findViewById()を呼び出さずに該当Viewを取得するために必要となるインポート宣言
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -27,7 +27,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     // DatabaseReferenceクラスと、ListView、QuestionクラスのArrayList、QuestionsListAdapterを定義
     private lateinit var mDatabaseReference: DatabaseReference
     private lateinit var mQuestionArrayList: ArrayList<Question>
+//    private lateinit var  mFavoriteArrayList: ArrayList<Question> //〇追加
     private lateinit var mAdapter: QuestionsListAdapter
+//    private lateinit var mFavoriteAdapter: FavoriteListAdapter //〇追加
+
+
 
     //Realmtimde DatabseのChildEventListenerと同じ役割
     //違いとしては、Listenerを削除するときに、Listener自身のインスタンスに対してremoveをするところ
@@ -171,7 +175,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         // ListViewの準備
         mAdapter = QuestionsListAdapter(this)
+//        mFavoriteAdapter = FavoriteListAdapter(this) //〇追加
         mQuestionArrayList = ArrayList<Question>()
+//        mFavoriteArrayList = ArrayList<Question>() //〇追加
         mAdapter.notifyDataSetChanged()
 
         //質問一覧画面でリストをタップしたらその質問の詳細画面に飛ぶようにしたいので、ListViewのsetOnItemClickListenerメソッドでリスナーを登録し、
@@ -221,40 +227,49 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
+        val user = FirebaseAuth.getInstance().currentUser
 
-        if (id == R.id.nav_favorite) { //ログインしている場合にボタンを表示
-            toolbar.title = getString(R.string.menu_favorite_label)
-            mGenre = 1
-        } else if (id == R.id.nav_hobby) {
+        if (id == R.id.nav_hobby) {
             toolbar.title = getString(R.string.menu_hobby_label)
-            mGenre = 2
+            mGenre = 1
         } else if (id == R.id.nav_life) {
             toolbar.title = getString(R.string.menu_life_label)
-            mGenre = 3
+            mGenre = 2
         } else if (id == R.id.nav_health) {
             toolbar.title = getString(R.string.menu_health_label)
-            mGenre = 4
+            mGenre = 3
         } else if (id == R.id.nav_compter){
             toolbar.title = getString(R.string.menu_compter_label)
+            mGenre = 4
+        } else if (id == R.id.nav_favorite) {
+            toolbar.title = getString(R.string.menu_favorite_label)
             mGenre = 5
+            //〇ドロワー内からお気に入り一覧画面へ　intentでFavoriteActivityへ画面遷移、(putExtraでデータの値を渡す?)
+            val intent = Intent(this, FavoriteActivity::class.java)
+            startActivity(intent)
+            if (user == null){  //ログインしていない場合、非表示　
+                item.isVisible = false
+            }
         }
+
         drawer_layout.closeDrawer(GravityCompat.START) //START :サイズを変更せずに、オブジェクトをコンテナの先頭でx軸の位置にプッシュする
 
         // 質問のリストをクリアしてから再度Adapterにセットし、AdapterをListViewにセットし直す
         mQuestionArrayList.clear()
-        mAdapter.setQuestionArrayList(mQuestionArrayList)
+        mAdapter.setQuestionArrayList(mQuestionArrayList) //〇QuestionListAdapterから
         listView.adapter = mAdapter
+
+//        mFavoriteArrayList.clear()
+//        mFavoriteAdapter.setFavoriteArrayList(mFavoriteArrayList) //〇QuestionListAdapterから
+//        listView.adapter = mFavoriteAdapter
+
+        
 
         // 一つ前のリスナーを消す
         snapshotListener?.remove()
 
-
-        // 選択したジャンルにリスナーを登録する
-
         /*
-        if (mGenreRef != null) {
-            mGenreRef!!.removeEventListener(mEventListener) //★登録処理をしている?
-        }
+
         //参照して登録
         mGenreRef = mDatabaseReference.child(ContentsPATH).child(mGenre.toString())
         mGenreRef!!.addChildEventListener(mEventListener)
