@@ -15,3 +15,6 @@ const val FavoritePATH = "favorite"
 
 // Preferenceに表示名を保存する時のキー
 const val NameKEY = "name"
+
+//お気に入り一覧の保存先
+var  mFavoriteArrayList = ArrayList<String>()

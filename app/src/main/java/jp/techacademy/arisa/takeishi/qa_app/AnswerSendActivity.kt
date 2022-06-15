@@ -58,10 +58,11 @@ class AnswerSendActivity : AppCompatActivity(), View.OnClickListener, DatabaseRe
         val dataBaseReference = FirebaseDatabase.getInstance().reference
         val answerRef = dataBaseReference.child(ContentsPATH).child(mQuestion.genre.toString()).child(mQuestion.questionUid).child(AnswersPATH)
 
-        val data = HashMap<String, String>()
+        val data = HashMap<String, String>() //HashMap key 値
 
         // UID
-        data["uid"] = FirebaseAuth.getInstance().currentUser!!.uid
+        data["uid"] = FirebaseAuth.getInstance().currentUser!!.uid //favorite key genre お気に入りするものを代入
+
 
         // 表示名
         // Preferenceから名前を取る

@@ -4,8 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Base64
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -17,8 +16,9 @@ class FavoriteActivity : AppCompatActivity() {
     //プロパティとしてFirebaseへのアクセスに必要な
     // DatabaseReferenceクラスと、ListView、QuestionクラスのArrayList、QuestionsListAdapterを定義
     private lateinit var mDatabaseReference: DatabaseReference
-    private lateinit var  mFavoriteArrayList: ArrayList<Question> //〇追加
-    private lateinit var mFavoriteAdapter: FavoriteListAdapter //〇追加
+    private lateinit var mFavoriteDatabaseReference: DatabaseReference
+    private lateinit var  mQuestionArrayList: ArrayList<Question> //〇追加         お気に入りに入っているもののQuestionUidだけをいれる　Adapterにセットする
+    private lateinit var mFavoriteAdapter: QuestionsListAdapter //〇追加
 
     //Realmtimde DatabseのChildEventListenerと同じ役割
     //違いとしては、Listenerを削除するときに、Listener自身のインスタンスに対してremoveをするところ
@@ -34,8 +34,8 @@ class FavoriteActivity : AppCompatActivity() {
         mDatabaseReference = FirebaseDatabase.getInstance().reference
 
         // ListViewの準備
-        mFavoriteAdapter = FavoriteListAdapter(this)
-        mFavoriteArrayList = ArrayList<Question>() //〇追加
+        mFavoriteAdapter = QuestionsListAdapter(this)
+        mQuestionArrayList = ArrayList<Question>() //〇追加
         mFavoriteAdapter.notifyDataSetChanged()
 
         //質問一覧画面でリストをタップしたらその質問の詳細画面に飛ぶようにしたいので、ListViewのsetOnItemClickListenerメソッドでリスナーを登録し、
@@ -43,13 +43,13 @@ class FavoriteActivity : AppCompatActivity() {
         listView.setOnItemClickListener{parent, view, position, id ->
             // Favorite(Question)のインスタンスをQuestionDetailActivityに渡して質問詳細画面を起動する
             val intent = Intent(applicationContext, QuestionDetailActivity::class.java)
-            intent.putExtra("question", mFavoriteArrayList[position]) //★QuestionDetailActivityでget keyはfavoriteにする??
+            intent.putExtra("question", mQuestionArrayList[position]) //★QuestionDetailActivityでget keyはfavoriteにする??
             startActivity(intent)
         }
 
         // 質問のリストをクリアしてから再度Adapterにセットし、AdapterをListViewにセットし直す
-        mFavoriteArrayList.clear()
-        mFavoriteAdapter.setFavoriteArrayList(mFavoriteArrayList) //〇QuestionListAdapterから変更
+        mQuestionArrayList.clear()
+        mFavoriteAdapter.setQuestionArrayList(mQuestionArrayList) //〇QuestionListAdapterから変更
         listView.adapter = mFavoriteAdapter
 
         // 一つ前のリスナーを消す
@@ -78,14 +78,76 @@ class FavoriteActivity : AppCompatActivity() {
                     }
                 }
                 //取得したデータを用いて、ListViewの表示の更新
-                mFavoriteArrayList.clear()
-                mFavoriteArrayList.addAll(questions)
+                mQuestionArrayList.clear()
+                mQuestionArrayList.addAll(questions)
                 mFavoriteAdapter.notifyDataSetChanged()
             }
     }
 
-//    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-//
-//        return true
-//    }
+    override fun onResume() {
+        super.onResume()
+        mFavoriteDatabaseReference.addChildEventListener(mEventListener)
+        mQuestionArrayList.clear()
+        mFavoriteAdapter.notifyDataSetChanged()
+        mFavoriteAdapter.setQuestionArrayList(mQuestionArrayList) //〇QuestionListAdapterから
+        listView.adapter = mFavoriteAdapter
+    }
+
+    private val mEventListener =
+        object : ChildEventListener { //変化があった時に呼ばれるリスナー　mEventListenerは質問投稿時の動き
+            override fun onChildAdded(dataSnapshot: DataSnapshot, s: String?) { //登録　
+                val map = dataSnapshot.value as Map<*, *> //★Map<*, *>どういう型でもいいよ dataSnapshotはHashMapと同じKEYと値
+
+                //keyをもとにそれぞれの値を出す　dataSnapshot　KEYと値で情報持っている Questionの中のもの全部
+                val mTitle = map["title"] as? String ?: ""
+                val mBody = map["body"] as? String ?: ""
+                val mName = map["name"] as? String ?: ""
+                val mUid = map["uid"] as? String ?: ""
+                val mQuestionUid = map["questionUid"] as? String ?: ""
+                val mGenre = map["genre"] as? Int ?: ""
+                val mBytes = map["bytes"] as? ByteArray ?: ""
+                //val mAnswers: map["answers"] as? ArrayList<Answer> ?: ""
+
+
+                //val title: String, val body: String, val name: String, val uid: String, val questionUid: String, val genre: Int, bytes: ByteArray, val answers: ArrayList<Answer>)
+
+                val answerUid = dataSnapshot.key ?: "" // dataSnapshotは全部持ってきて、mFavoriteArrayListに入っている同じ条件の情報を引っ張ってくる
+
+                val answerArrayList = ArrayList<Answer>()
+
+                val answerMap = map["answers"] as HashMap<*, *>?
+                //取ってきた情報をmQuestionにいれる　mQuestionを定義する必要がある
+                //val mQuestion: Question mQuestionの定義はここ??
+                // どうやってmQuestiobに情報をいれる??val answerMap = map["answers"] as HashMap<*, *>?を使う??
+                for (answer in answerMap!!.keys) {
+                }
+
+                // map["body"] []にkeyを入れると値が取れる
+                val body = map["body"] as? String ?: ""
+                val name = map["name"] as? String ?: ""
+                val uid = map["uid"] as? String ?: ""
+
+                val answer = Answer(body, name, uid, answerUid)
+                answerArrayList.add(answer) //リストを定義する
+                mFavoriteAdapter.notifyDataSetChanged()
+            }
+
+            //★下の4つの関数の役割　使わなくても記載する必要がある
+            override fun onChildChanged(dataSnapshot: DataSnapshot, s: String?) { //上書き
+
+            }
+
+            override fun onChildRemoved(dataSnapshot: DataSnapshot) {
+
+            }
+
+            override fun onChildMoved(dataSnapshot: DataSnapshot, s: String?) {
+
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+
+            }
+        }
+
 }

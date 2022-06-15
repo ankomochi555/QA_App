@@ -15,6 +15,7 @@ class QuestionDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityQuestionDetailBinding
 
     private lateinit var mQuestion: Question
+
     //private lateinit var mFavorite: Question
     private lateinit var mAdapter: QuestionDetailListAdapter
     private lateinit var mAnswerRef: DatabaseReference
@@ -28,7 +29,7 @@ class QuestionDetailActivity : AppCompatActivity() {
 
             for (answer in mQuestion.answers) { //〇変更??
                 // 同じAnswerUidのものが存在しているときは何もしない
-                if (answerUid == answer.answerUid){
+                if (answerUid == answer.answerUid) {
                     return
                 }
             }
@@ -59,45 +60,46 @@ class QuestionDetailActivity : AppCompatActivity() {
         }
     }
 
-    private val mEventListener = object : ChildEventListener { //変化があった時に呼ばれるリスナー　mEventListenerは質問投稿時の動き
-        override fun onChildAdded(dataSnapshot: DataSnapshot, s: String?) { //登録　
-            val map = dataSnapshot.value as Map<*, *> //★Map<*, *>どういう型でもいいよ
+    private val mEventListener =
+        object : ChildEventListener { //変化があった時に呼ばれるリスナー　mEventListenerは質問投稿時の動き
+            override fun onChildAdded(dataSnapshot: DataSnapshot, s: String?) { //登録　
+                val map = dataSnapshot.value as Map<*, *> //★Map<*, *>どういう型でもいいよ
 
-            val answerUid = dataSnapshot.key ?: ""
+                val answerUid = dataSnapshot.key ?: ""
 
-            for (answer in mQuestion.answers) {
-                // 同じAnswerUidのものが存在しているときは何もしない
-                if (answerUid == answer.answerUid){
-                    return
+                for (answer in mQuestion.answers) {
+                    // 同じAnswerUidのものが存在しているときは何もしない
+                    if (answerUid == answer.answerUid) {
+                        return
+                    }
                 }
+
+                val body = map["body"] as? String ?: ""
+                val name = map["name"] as? String ?: ""
+                val uid = map["uid"] as? String ?: ""
+
+                val answer = Answer(body, name, uid, answerUid)
+                mQuestion.answers.add(answer)
+                mAdapter.notifyDataSetChanged()
             }
 
-            val body = map["body"] as? String ?: ""
-            val name = map["name"] as? String ?: ""
-            val uid = map["uid"] as? String ?: ""
+            //★下の4つの関数の役割　使わなくても記載する必要がある
+            override fun onChildChanged(dataSnapshot: DataSnapshot, s: String?) { //上書き
 
-            val answer = Answer(body, name, uid, answerUid)
-            mQuestion.answers.add(answer)
-            mAdapter.notifyDataSetChanged()
+            }
+
+            override fun onChildRemoved(dataSnapshot: DataSnapshot) {
+
+            }
+
+            override fun onChildMoved(dataSnapshot: DataSnapshot, s: String?) {
+
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+
+            }
         }
-
-        //★下の4つの関数の役割　使わなくても記載する必要がある
-        override fun onChildChanged(dataSnapshot: DataSnapshot, s: String?) { //上書き
-
-        }
-
-        override fun onChildRemoved(dataSnapshot: DataSnapshot) {
-
-        }
-
-        override fun onChildMoved(dataSnapshot: DataSnapshot, s: String?) {
-
-        }
-
-        override fun onCancelled(databaseError: DatabaseError) {
-
-        }
-    }
 
     //onCreateメソッドでは渡ってきたQuestionクラスのインスタンスを保持し、タイトルを設定。
     // そして、ListViewの準備をする。
@@ -111,19 +113,16 @@ class QuestionDetailActivity : AppCompatActivity() {
         // 渡ってきたQuestionのオブジェクトを保持する
         val extras = intent.extras
         mQuestion = extras!!.get("question") as Question
-//        mFavorite = extras!!.get("favorite") as Question //〇追加??
+
 
         title = mQuestion.title
-//        title = mFavorite.title //〇追加??
+
 
         // ListViewの準備
         mAdapter = QuestionDetailListAdapter(this, mQuestion)
         listView.adapter = mAdapter
         mAdapter.notifyDataSetChanged()
 
-//        mAdapter = QuestionDetailListAdapter(this, mFavorite) //〇追加??
-//        listView.adapter = mAdapter
-//        mAdapter.notifyDataSetChanged()
 
         //FABをタップしたらログインしていなければログイン画面に遷移させ、
         // ログインしていれば後ほど作成する回答作成画面に遷移させる準備をしておく
@@ -146,30 +145,44 @@ class QuestionDetailActivity : AppCompatActivity() {
 
         //〇　ログインしている場合、質問詳細画面に「お気に入り」ボタンを表示する　
         val user = FirebaseAuth.getInstance().currentUser
-        if (user == null){ //ログインしていない場合、表示しない
+        if (user == null) { //ログインしていない場合、表示しない
             favoriteImageBtn.visibility = View.INVISIBLE
         } else { //ログインしている場合、表示
             //favoriteImageBtn.setVisibility(View.VISIBLE)
 
+            val dataBaseReference = FirebaseDatabase.getInstance().reference
+            val mFavoriteRef: DatabaseReference =
+                dataBaseReference.child(FavoritePATH).child(user!!.uid).child(mQuestion.questionUid)
+            mFavoriteRef.addChildEventListener(mFavoriteListener) //　お気に入り押したときにmFavoriteListenerリスナーが動く
+        }
         var flg = true
         //val favoriteImageBtn : ImageButton = findViewById(R.id.favoriteImageBtn)
         binding.favoriteImageBtn.setOnClickListener {
 
-                //お気に入りタップで登録/更新 
-                val dataBaseReference = FirebaseDatabase.getInstance().reference
-                val mFavoriteRef: DatabaseReference = dataBaseReference.child(FavoritePATH).child(user!!.uid).child(mQuestion.questionUid)
+            //お気に入りタップで登録/更新
 
-                if (flg) {
-                    binding.favoriteImageBtn.setImageResource(R.drawable.ic_star)
-                    flg = false
-                    mFavoriteRef.addChildEventListener(mFavoriteListener) //　お気に入り押したときにmFavoriteListenerリスナーが動く
-                } else {
-                    binding.favoriteImageBtn.setImageResource(R.drawable.ic_star_border)
-                    flg = true
-                    mFavoriteRef!!.removeEventListener(mFavoriteListener)
-                }
+            val dataBaseReference = FirebaseDatabase.getInstance().reference
+            val mFavoriteRef: DatabaseReference =
+                dataBaseReference.child(FavoritePATH).child(user!!.uid).child(mQuestion.questionUid)
 
-                /*
+            if (flg) {
+                binding.favoriteImageBtn.setImageResource(R.drawable.ic_star)
+                flg = false
+
+                //データを保存する何か
+                val data = HashMap<String, String>() //HashMap key 値
+                data["genre"] = mQuestion.genre.toString() //保存するもの
+                mFavoriteRef.setValue(data) //mFavoriteRef保存する場所
+                mFavoriteArrayList.add(mQuestion.questionUid)
+            } else {
+                binding.favoriteImageBtn.setImageResource(R.drawable.ic_star_border)
+                flg = true
+                //mFavoriteRef!!.removeEventListener(mFavoriteListener)
+                mFavoriteRef.removeValue() //登録解除
+                mFavoriteArrayList.remove(mQuestion.questionUid)
+            }
+
+            /*
                 if (mFavoriteRef == null) {
                     mFavoriteRef.addChildEventListener(mFavoriteListener) //　お気に入り押したときにmFavoriteListenerリスナーが動く
                     favoriteImageBtn.setImageResource(R.drawable.ic_star) //ImageViewの変更
@@ -180,7 +193,7 @@ class QuestionDetailActivity : AppCompatActivity() {
                  */
 
 
-                /* 選択したジャンルにリスナーを登録する MainActivity
+            /* 選択したジャンルにリスナーを登録する MainActivity
                 if (mGenreRef != null) {
                     mGenreRef!!.removeEventListener(mEventListener) 
                 }
@@ -189,9 +202,9 @@ class QuestionDetailActivity : AppCompatActivity() {
                 mGenreRef!!.addChildEventListener(mEventListener)
 
                  */
-            }
+        }
 
-            /*//Chapter7-7.6
+        /*//Chapter7-7.6
             // お気に入り状態を取得
             val isFavorite = FavoriteShop.findBy(data.id) != null
 
@@ -208,12 +221,13 @@ class QuestionDetailActivity : AppCompatActivity() {
                 }
             }
              */
-        }
+
 
         //Firebaseへのリスナーの登録が重要
         // 回答作成画面から戻ってきた時にその回答を表示させるために登録しておく ★ .child(mQuestion.genre.toString()). 変数.プロパティ.toString()型に変更
         val dataBaseReference = FirebaseDatabase.getInstance().reference
-        mAnswerRef = dataBaseReference.child(ContentsPATH).child(mQuestion.genre.toString()).child(mQuestion.questionUid).child(AnswersPATH)
+        mAnswerRef = dataBaseReference.child(ContentsPATH).child(mQuestion.genre.toString())
+            .child(mQuestion.questionUid).child(AnswersPATH)
         mAnswerRef.addChildEventListener(mEventListener)
     }
 }
