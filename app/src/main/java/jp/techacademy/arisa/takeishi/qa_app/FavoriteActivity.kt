@@ -35,6 +35,8 @@ class FavoriteActivity : AppCompatActivity() {
         // Firebase
         mDatabaseReference = FirebaseDatabase.getInstance().reference
 
+        mFavoriteDatabaseReference = mDatabaseReference.child(ContentsPATH)
+
         // ListViewの準備
         mFavoriteAdapter = QuestionsListAdapter(this)
         mQuestionArrayList = ArrayList<Question>() //〇追加
@@ -88,7 +90,8 @@ class FavoriteActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        mFavoriteDatabaseReference.addChildEventListener(mEventListener)
+        //mFavoriteDatabaseReference.addChildEventListener(mEventListener)
+        mDatabaseReference.addChildEventListener(mEventListener)
         mQuestionArrayList.clear()
         mFavoriteAdapter.notifyDataSetChanged()
         mFavoriteAdapter.setQuestionArrayList(mQuestionArrayList) //〇QuestionListAdapterから
