@@ -18,7 +18,7 @@ class QuestionDetailActivity : AppCompatActivity() {
     //private lateinit var mFavorite: Question
     private lateinit var mAdapter: QuestionDetailListAdapter
     private lateinit var mAnswerRef: DatabaseReference
-    private var mIsFavorite: Boolean = true
+    private var mIsFavorite: Boolean = false
 
     //更新　onChild全部入れる　お気に入り登録のときだけ追加のみaddedのなかに追加処理を書く　お気に入り追加は別で定義
     private val mFavoriteListener = object : ChildEventListener { //お気に入り登録時の動き
@@ -26,7 +26,7 @@ class QuestionDetailActivity : AppCompatActivity() {
             if (mIsFavorite) {
                 //binding.favoriteImageBtn.setImageResource(R.drawable.ic_star)
                 favoriteImageBtn.setImageResource(R.drawable.ic_star)
-                mIsFavorite = false
+                mIsFavorite = true
 
 //                //データを保存する何か
 //                val data = HashMap<String, String>() //HashMap key 値
@@ -143,6 +143,11 @@ class QuestionDetailActivity : AppCompatActivity() {
             }
         }
 
+        val dataBaseReference = FirebaseDatabase.getInstance().reference
+        mAnswerRef = dataBaseReference.child(ContentsPATH).child(mQuestion.genre.toString())
+            .child(mQuestion.questionUid).child(AnswersPATH)
+        mAnswerRef.addChildEventListener(mEventListener)
+
         //〇　ログインしている場合、質問詳細画面に「お気に入り」ボタンを表示する　
         val user = FirebaseAuth.getInstance().currentUser
         if (user == null) { //ログインしていない場合、表示しない
@@ -170,19 +175,22 @@ class QuestionDetailActivity : AppCompatActivity() {
                 //binding.favoriteImageBtn.setImageResource(R.drawable.ic_star)
                 favoriteImageBtn.setImageResource(R.drawable.ic_star)
                 mIsFavorite = false
+                mFavoriteArrayList.remove(mQuestion.questionUid)
+
+
+            } else {
+                //binding.favoriteImageBtn.setImageResource(R.drawable.ic_star_border)
+                favoriteImageBtn.setImageResource(R.drawable.ic_star_border)
+                mIsFavorite = true
+                //mFavoriteRef!!.removeEventListener(mFavoriteListener)
 
                 //データを保存する何か
                 val data = HashMap<String, String>() //HashMap key 値
                 data["genre"] = mQuestion.genre.toString() //保存するもの
                 mFavoriteRef.setValue(data) //mFavoriteRef保存する場所
                 mFavoriteArrayList.add(mQuestion.questionUid)
-            } else {
-                //binding.favoriteImageBtn.setImageResource(R.drawable.ic_star_border)
-                favoriteImageBtn.setImageResource(R.drawable.ic_star_border)
-                mIsFavorite = true
-                //mFavoriteRef!!.removeEventListener(mFavoriteListener)
-                mFavoriteRef.removeValue() //登録解除
-                mFavoriteArrayList.remove(mQuestion.questionUid)
+//                mFavoriteRef.removeValue() //登録解除
+//                mFavoriteArrayList.remove(mQuestion.questionUid)
             }
 
             /*
@@ -228,9 +236,6 @@ class QuestionDetailActivity : AppCompatActivity() {
 
         //Firebaseへのリスナーの登録が重要
         // 回答作成画面から戻ってきた時にその回答を表示させるために登録しておく ★ .child(mQuestion.genre.toString()). 変数.プロパティ.toString()型に変更
-        val dataBaseReference = FirebaseDatabase.getInstance().reference
-        mAnswerRef = dataBaseReference.child(ContentsPATH).child(mQuestion.genre.toString())
-            .child(mQuestion.questionUid).child(AnswersPATH)
-        mAnswerRef.addChildEventListener(mEventListener)
+
     }
 }

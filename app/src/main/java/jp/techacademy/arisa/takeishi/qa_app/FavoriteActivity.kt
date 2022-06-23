@@ -90,8 +90,8 @@ class FavoriteActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        //mFavoriteDatabaseReference.addChildEventListener(mEventListener)
-        mDatabaseReference.addChildEventListener(mEventListener)
+        mFavoriteDatabaseReference.addChildEventListener(mEventListener)
+        //mDatabaseReference.addChildEventListener(mEventListener)
         mQuestionArrayList.clear()
         mFavoriteAdapter.notifyDataSetChanged()
         mFavoriteAdapter.setQuestionArrayList(mQuestionArrayList) //〇QuestionListAdapterから
@@ -102,8 +102,9 @@ class FavoriteActivity : AppCompatActivity() {
         object : ChildEventListener { //変化があった時に呼ばれるリスナー　mEventListenerは質問投稿時の動き
             override fun onChildAdded(dataSnapshot: DataSnapshot, s: String?) { //登録　
                 // ジャンルごとにまず取れるので、それを１つずつ見て中身を抽出する
-                val map = dataSnapshot.value as? HashMap<*, *> //★Map<*, *>どういう型でもいいよ dataSnapshotはHashMapと同じKEYと値
+                //val map = dataSnapshot.value as? HashMap<*, *> //★Map<*, *>どういう型でもいいよ dataSnapshotはHashMapと同じKEYと値
 
+                val map = dataSnapshot.value as HashMap<String, HashMap<String, String>>?
                 if (map != null) { //forループ内で何をしている??
                     for ((key, value) in map){
                         val map2 = HashMap<String, String>()
