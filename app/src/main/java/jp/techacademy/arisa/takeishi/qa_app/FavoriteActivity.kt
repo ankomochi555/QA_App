@@ -7,8 +7,9 @@ import android.util.Base64
 import com.google.firebase.database.*
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import kotlinx.android.synthetic.main.app_bar_main.*
-import kotlinx.android.synthetic.main.content_main.*
+//import kotlinx.android.synthetic.main.app_bar_main.*
+//import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.android.synthetic.main.activity_favorite.*
 
 class FavoriteActivity : AppCompatActivity() {
 
@@ -88,7 +89,7 @@ class FavoriteActivity : AppCompatActivity() {
 //            }
     }
 
-    override fun onResume() {
+    override fun onResume() { //初期化
         super.onResume()
         mFavoriteDatabaseReference.addChildEventListener(mEventListener)
         //mDatabaseReference.addChildEventListener(mEventListener)
@@ -98,6 +99,7 @@ class FavoriteActivity : AppCompatActivity() {
         listView.adapter = mFavoriteAdapter
     }
 
+    //データがここで取れていない
     private val mEventListener =
         object : ChildEventListener { //変化があった時に呼ばれるリスナー　mEventListenerは質問投稿時の動き
             override fun onChildAdded(dataSnapshot: DataSnapshot, s: String?) { //登録　
@@ -113,7 +115,7 @@ class FavoriteActivity : AppCompatActivity() {
                         }
                         val question = convertMapToQuestion(key as String, map2)
 
-                        if (mFavoriteArrayList.contains(question.questionUid)){
+                        if (mFavoriteArrayList.contains(question.questionUid)){ //お気に入りリスト
                             mQuestionArrayList.add(question)
                         }
                     }

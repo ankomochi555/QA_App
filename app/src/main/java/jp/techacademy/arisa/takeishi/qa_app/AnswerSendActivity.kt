@@ -43,7 +43,7 @@ class AnswerSendActivity : AppCompatActivity(), View.OnClickListener, DatabaseRe
 
         if (databaseError == null) {
             finish()
-        } else { //★idのcontentはどこからきたもの?
+        } else {
             Snackbar.make(findViewById(android.R.id.content), getString(R.string.send_answer_failure), Snackbar.LENGTH_LONG).show()
         }
     }

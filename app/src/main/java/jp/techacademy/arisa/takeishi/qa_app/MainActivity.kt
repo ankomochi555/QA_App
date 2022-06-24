@@ -245,11 +245,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             toolbar.title = getString(R.string.menu_favorite_label)
             mGenre = 5
             //〇ドロワー内からお気に入り一覧画面へ　intentでFavoriteActivityへ画面遷移、(putExtraでデータの値を渡す?)
-//            val intent = Intent(this, FavoriteActivity::class.java)
-//            startActivity(intent)
-//            if (user == null){  //ログインしていない場合、非表示　
-//                item.isVisible = false
-//            }
+            val intent = Intent(this, FavoriteActivity::class.java)
+            startActivity(intent)
+            if (user == null){  //ログインしていない場合、非表示　
+                item.isVisible = false
+            }
         }
 
         drawer_layout.closeDrawer(GravityCompat.START) //START :サイズを変更せずに、オブジェクトをコンテナの先頭でx軸の位置にプッシュする

@@ -23,24 +23,12 @@ class QuestionDetailActivity : AppCompatActivity() {
     //更新　onChild全部入れる　お気に入り登録のときだけ追加のみaddedのなかに追加処理を書く　お気に入り追加は別で定義
     private val mFavoriteListener = object : ChildEventListener { //お気に入り登録時の動き
         override fun onChildAdded(dataSnapshot: DataSnapshot, s: String?) { //登録　/ 更新
-            if (mIsFavorite) {
                 //binding.favoriteImageBtn.setImageResource(R.drawable.ic_star)
                 favoriteImageBtn.setImageResource(R.drawable.ic_star)
                 mIsFavorite = true
 
-//                //データを保存する何か
-//                val data = HashMap<String, String>() //HashMap key 値
-//                data["genre"] = mQuestion.genre.toString() //保存するもの
-//                mFavoriteRef.setValue(data) //mFavoriteRef保存する場所
-//                mFavoriteArrayList.add(mQuestion.questionUid)
-//            } else {
-//                //binding.favoriteImageBtn.setImageResource(R.drawable.ic_star_border)
-//                favoriteImageBtn.setImageResource(R.drawable.ic_star_border)
-//                mIsFavorite = true
-//                //mFavoriteRef!!.removeEventListener(mFavoriteListener)
-//                mFavoriteRef.removeValue() //登録解除
-//                mFavoriteArrayList.remove(mQuestion.questionUid)
-            }
+//
+
         }
 
         override fun onChildChanged(dataSnapshot: DataSnapshot, s: String?) {
@@ -155,6 +143,7 @@ class QuestionDetailActivity : AppCompatActivity() {
         } else { //ログインしている場合、表示
             //favoriteImageBtn.setVisibility(View.VISIBLE)
 
+            mIsFavorite = false
             val dataBaseReference = FirebaseDatabase.getInstance().reference
             val mFavoriteRef: DatabaseReference =
                 dataBaseReference.child(FavoritePATH).child(user!!.uid).child(mQuestion.questionUid)
